@@ -1,8 +1,38 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import '../../core/app_colors.dart';
+import '../../core/api_service.dart';
 
-class CareNavigationScreen extends StatelessWidget {
+class CareNavigationScreen extends StatefulWidget {
   const CareNavigationScreen({super.key});
+
+  @override
+  State<CareNavigationScreen> createState() => _CareNavigationScreenState();
+}
+
+class _CareNavigationScreenState extends State<CareNavigationScreen> {
+  List<dynamic> _appointments = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAppointments();
+  }
+
+  Future<void> _fetchAppointments() async {
+    try {
+      final response = await apiService.get('/appointments/');
+      if (response.statusCode == 200) {
+        setState(() {
+          _appointments = jsonDecode(response.body);
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+       setState(() { _isLoading = false; });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,36 +43,60 @@ class CareNavigationScreen extends StatelessWidget {
         backgroundColor: AppColors.white,
         foregroundColor: AppColors.textMain,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(24),
+      body: _isLoading 
+        ? const Center(child: CircularProgressIndicator())
+        : ListView(
+            padding: const EdgeInsets.all(24),
+            children: [
+              const Text(
+                'Your Care Plan',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 24),
+              if (_appointments.isEmpty)
+                _buildEmptyState()
+              else
+                ..._appointments.map((a) => _buildAppointmentCard(
+                  a['doctor_name'],
+                  a['specialty'] ?? 'Specialist',
+                  a['appointment_time'],
+                  a['location'] ?? 'Medical Center',
+                )).toList(),
+              const SizedBox(height: 32),
+              const Text(
+                'Recommended Next Steps',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              _buildActionItem(
+                Icons.calendar_today_outlined,
+                'Schedule Blood Work',
+                'Based on your last lab report analysis.',
+              ),
+              _buildActionItem(
+                Icons.assignment_outlined,
+                'Complete Health Questionnaire',
+                'Update your profile for better AI insights.',
+              ),
+            ],
+          ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: const Column(
         children: [
-          const Text(
-            'Your Care Plan',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 24),
-          _buildAppointmentCard(
-            'Dr. Sarah Mitchell',
-            'Cardiologist',
-            'Feb 20, 2024 at 10:30 AM',
-            'General Hospital, Room 402',
-          ),
-          const SizedBox(height: 32),
-          const Text(
-            'Recommended Next Steps',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          _buildActionItem(
-            Icons.calendar_today_outlined,
-            'Schedule Blood Work',
-            'Based on your last lab report analysis.',
-          ),
-          _buildActionItem(
-            Icons.assignment_outlined,
-            'Complete Health Questionnaire',
-            'Update your profile for better AI insights.',
-          ),
+          Icon(Icons.event_available, size: 48, color: Colors.grey),
+          SizedBox(height: 16),
+          Text("No upcoming appointments."),
+          SizedBox(height: 8),
+          Text("Keep your care plan updated by scheduling your next visit."),
         ],
       ),
     );
@@ -50,6 +104,7 @@ class CareNavigationScreen extends StatelessWidget {
 
   Widget _buildAppointmentCard(String name, String specialty, String time, String location) {
     return Container(
+      margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppColors.white,
