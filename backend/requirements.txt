@@ -1,0 +1,13 @@
+flask
+flask-sqlalchemy
+flask-migrate
+flask-jwt-extended
+flask-cors
+psycopg2-binary
+mongoengine
+openai
+tensorflow
+boto3
+python-dotenv
+cryptography
+pydantic
