@@ -63,3 +63,16 @@ def test_symptom_check_requires_auth(client):
     """Test that symptom check endpoint is protected."""
     response = client.post('/api/ai/symptom-check', json={"symptoms": ["Fever"]})
     assert response.status_code == 401
+
+def test_user_registration_invalid_email(client):
+    """Test that registration fails with an invalid email format."""
+    payload = {
+        "email": "invalid-email",
+        "password": "password123",
+        "full_name": "Bad Email User"
+    }
+    response = client.post('/api/auth/register', 
+                           data=json.dumps(payload),
+                           content_type='application/json')
+    assert response.status_code == 400
+    assert b"Invalid email format" in response.data

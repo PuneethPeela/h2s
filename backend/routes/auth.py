@@ -3,13 +3,24 @@ from extensions import db, jwt
 from models import User
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from datetime import timedelta
+import re
 
 auth_bp = Blueprint('auth', __name__)
+
+def is_valid_email(email):
+    # Standard email regex pattern
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return re.match(pattern, email) is not None
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
-    if User.query.filter_by(email=data['email']).first():
+    email = data.get('email', '')
+    
+    if not is_valid_email(email):
+        return jsonify({"msg": "Invalid email format"}), 400
+        
+    if User.query.filter_by(email=email).first():
         return jsonify({"msg": "User already exists"}), 400
     
     new_user = User(
