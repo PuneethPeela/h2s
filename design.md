@@ -1,46 +1,44 @@
-# System Design Document
+# System Design - Team NIGHTRIDERS
 
-## 1. Architecture Overview
-The system follows a microservices-ready monolithic architecture.
+**Team Name**: NIGHTRIDERS  
+**Team Leader**: B. Sai Pranav
 
-- **Frontend**: Flutter-based mobile/web app using a Clean Architecture pattern (Features -> Core -> Widgets).
-- **Backend**: Python Flask REST API orchestrating AI services and data layers.
-- **AI Layer**: OpenAI GPT-4 for conversation, TensorFlow for condition prediction, and AWS Textract for OCR.
-- **Data Layer**: Hybrid storage using PostgreSQL for relational data and MongoDB for medical knowledge and chat logs.
+---
 
-## 2. Database Design
+## 🏛 Architecture Overview
+The system follows a modern microservices-compatible architecture designed for high availability and scalability.
 
-### 2.1 PostgreSQL (Relational)
-- `users`: Authentication and core profile.
-- `medical_history`: Past conditions and status.
-- `prescriptions`: Medication details.
-- `reminders`: Schedule and adherence tracking.
-- `appointments`: Care navigation data.
+```mermaid
+graph TD
+    User((Patient/User)) --> FlutterApp[Flutter Mobile App]
+    FlutterApp --> API[Flask REST API Gateway]
+    API --> Auth[JWT Auth Service]
+    API --> AIService[AI Agent Logic]
+    API --> LabService[OCR & Lab Parser]
+    
+    AIService --> OpenAI[OpenAI API]
+    LabService --> Textract[AWS Textract]
+    
+    API --> PostgreSQL[(PostgreSQL: Structured Data)]
+    API --> MongoDB[(MongoDB: Unstructured Data)]
+    
+    API --> FCM[Firebase Messaging]
+```
 
-### 2.2 MongoDB (Unstructured)
-- `medical_knowledge`: Symptom-disease mapping and lifestyle advice.
-- `chat_history`: Threaded messages with context.
-- `lab_reports`: OCR metadata and simplified summaries.
+## 💾 Database Schema
 
-## 3. Component Interaction
+### PostgreSQL (Structured)
+- **Users**: Personal info, medical meta-data.
+- **Prescriptions**: Drug names, dosages, schedules.
+- **Reminders**: Time-stamped medication alerts.
+- **Appointments**: Scheduled follow-ups and clinic info.
 
-### 3.1 AI Chat Flow
-1. User sends message via Flutter UI.
-2. Flask API retrieves session context from MongoDB.
-3. OpenAI GPT-4 processes input with health-specific system prompt.
-4. Response is streamed/sent back and saved to MongoDB.
+### MongoDB (Unstructured)
+- **ChatHistory**: Contextual conversation logs.
+- **LabReports**: Raw OCR data and simplified explanations.
+- **KnowledgeBase**: Symptom-disease mapping datasets.
 
-### 3.2 Lab Analysis Flow
-1. User uploads PDF to S3 (via Flask).
-2. Flask triggers AWS Textract for OCR.
-3. Raw data is processed by GPT-4 for simplification.
-4. Resulting summary is stored in MongoDB and displayed to user.
-
-## 4. Infrastructure Design
-- **Local**: `docker-compose` for PG, Mongo, and Flask.
-- **Production**:
-  - AWS ECS (Fargate) for API.
-  - AWS RDS (PostgreSQL).
-  - MongoDB Atlas.
-  - AWS S3 for storage.
-  - CloudFront for frontend distribution.
+## 🌉 Communication Patterns
+- **RESTful API**: Standard communication between Frontend and Backend.
+- **Real-time Updates**: Polishing features like chat and medication alerts.
+- **Secure Tunneling**: HTTPS for all external communications.

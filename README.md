@@ -1,7 +1,12 @@
-# AI-Based Patient Support Assistant
+# AI-Based Patient Support Assistant - Team NIGHTRIDERS
+
+**Team Name**: NIGHTRIDERS  
+**Team Leader**: B. Sai Pranav
+
+---
 
 ## 🎯 Problem Statement Alignment
-This solution is designed to improve **efficiency, understanding, and support** within the healthcare ecosystem by providing:
+This solution is designed to improve **efficiency, understanding, and support** within the healthcare ecosystem...
 - **Patient Education**: Simplification of complex medical terms and lab reports.
 - **Care Navigation**: Automated appointment scheduling and follow-up guidance.
 - **Decision Support**: AI-powered symptom analysis with risk scoring.

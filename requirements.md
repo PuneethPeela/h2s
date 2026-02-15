@@ -1,43 +1,42 @@
-# Requirements Specification
+# System Requirements - Team NIGHTRIDERS
 
-## 1. Functional Requirements
+**Team Name**: NIGHTRIDERS  
+**Team Leader**: B. Sai Pranav
 
-### 1.1 User Authentication
-- Secure registration and login using JWT.
-- User profile management including medical history.
+---
 
-### 1.2 AI Chat Assistant
-- Real-time conversational interface.
-- Contextual memory for ongoing conversations.
-- Medical terminology simplification.
+## 📅 Introduction
+The AI-Based Patient Support Assistant is an intelligent healthcare platform designed to empower patients with better disease understanding, treatment adherence, and care navigation.
 
-### 1.3 Symptom Checker
-- Multi-symptom selection.
-- AI-based risk assessment and disease suggestions.
-- Confidence scoring and safety disclaimers.
+## ✅ Functional Requirements
 
-### 1.4 Lab Report Analysis
-- Support for PDF and image uploads.
-- Automated data extraction using OCR (AWS Textract).
-- Simplified summaries of complex lab results.
+### 1. User Management
+- [x] Secure registration and login (JWT).
+- [x] Profile management and medical history tracking.
+- [x] Email validation for all user registrations.
 
-### 1.5 Medication Management
-- Prescription entry and reminder scheduling.
-- Dose adherence tracking.
-- Adherence scoring/dashboard.
+### 2. AI Medical Assistance
+- [x] Real-time conversational AI (OpenAI GPT-4).
+- [x] Medical terminology simplification.
+- [x] Contextual conversation memory for longitudinal support.
 
-### 2. Non-Functional Requirements
+### 3. Symptom & Decision Support
+- [x] Symptom input with severity indicators.
+- [x] AI conditioning analysis via synthetic datasets.
+- [x] Confidence scoring and medical action recommendations.
 
-### 2.1 Security & Compliance
-- Data encryption at rest and in transit.
-- HIPAA/GDPR best practices (avoiding storage of clear-text PII).
-- Medical disclaimer enforcement.
+### 4. Lab Report Processing
+- [x] Support for PDF/Image uploads.
+- [x] OCR extraction (AWS Textract).
+- [x] Simplified results dashboard and health scoring.
 
-### 2.2 Performance
-- Low-latency AI responses.
-- Responsive mobile UI (Flutter).
-- Scalable backend (Docker + AWS ECS).
+### 5. Care & Medication Management
+- [x] Medication reminder scheduling and tracking.
+- [x] Appointment scheduling and follow-ups.
+- [x] Compliance tracking and adherence dashboards.
 
-### 2.3 Scalability
-- Support for concurrent users via containerization and load balancing.
-- Hybrid data storage for structured and unstructured data.
+## 🚀 Non-Functional Requirements
+- **Security**: Data encryption at rest and in transit.
+- **Compliance**: Adherence to ethical healthcare AI guidelines.
+- **Scalability**: Dockerized microservices architecture.
+- **Performance**: Low-latency AI responses.

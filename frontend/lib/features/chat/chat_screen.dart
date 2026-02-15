@@ -4,6 +4,8 @@ import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:uuid/uuid.dart';
 import '../../core/app_colors.dart';
 import '../symptom_checker/symptom_screen.dart';
+import '../../core/api_service.dart';
+import 'dart:convert';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -16,6 +18,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final List<types.Message> _messages = [];
   final _user = const types.User(id: 'user-id');
   final _ai = const types.User(id: 'ai-id', firstName: 'Health AI');
+  String? _sessionId;
   
   @override
   void initState() {
@@ -35,13 +38,25 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
-  void _handleSendPressed(types.PartialText message) {
+  Future<void> _handleSendPressed(types.PartialText message) async {
     _addMessage(message.text, isUser: true);
     
-    // Simulate AI response for demo
-    Future.delayed(const Duration(seconds: 1), () {
-      _addMessage("I understand. It sounds like you're asking about ${message.text}. Let me check our medical database...", isUser: false);
-    });
+    try {
+      final response = await apiService.post('/ai/chat', {
+        'message': message.text,
+        if (_sessionId != null) 'session_id': _sessionId,
+      });
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        _sessionId = data['session_id'];
+        _addMessage(data['response'], isUser: false);
+      } else {
+        _addMessage("Sorry, I'm having trouble connecting to the medical server.", isUser: false);
+      }
+    } catch (e) {
+      _addMessage("Network error. Please check your connection.", isUser: false);
+    }
   }
 
   @override
