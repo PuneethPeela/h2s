@@ -1,8 +1,49 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import '../../core/app_colors.dart';
+import '../../core/api_service.dart';
 
-class MedicationDashboard extends StatelessWidget {
+class MedicationDashboard extends StatefulWidget {
   const MedicationDashboard({super.key});
+
+  @override
+  State<MedicationDashboard> createState() => _MedicationDashboardState();
+}
+
+class _MedicationDashboardState extends State<MedicationDashboard> {
+  List<dynamic> _reminders = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchReminders();
+  }
+
+  Future<void> _fetchReminders() async {
+    try {
+      final response = await apiService.get('/meds/reminders');
+      if (response.statusCode == 200) {
+        setState(() {
+          _reminders = jsonDecode(response.body);
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() { _isLoading = false; });
+    }
+  }
+
+  Future<void> _markAsTaken(int reminderId) async {
+    try {
+      final response = await apiService.post('/meds/reminders/$reminderId/mark-taken', {});
+      if (response.statusCode == 200) {
+        _fetchReminders();
+      }
+    } catch (e) {
+      // Handle error
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,21 +54,28 @@ class MedicationDashboard extends StatelessWidget {
         backgroundColor: AppColors.white,
         foregroundColor: AppColors.textMain,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(24),
-        children: [
-          _buildSummaryCard(),
-          const SizedBox(height: 32),
-          const Text(
-            'Today\'s Schedule',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      body: _isLoading 
+        ? const Center(child: CircularProgressIndicator())
+        : ListView(
+            padding: const EdgeInsets.all(24),
+            children: [
+              _buildSummaryCard(),
+              const SizedBox(height: 32),
+              const Text(
+                'Today\'s Schedule',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              if (_reminders.isEmpty)
+                const Center(child: Text("No pending medications.")),
+              ..._reminders.map((r) => _buildMedItem(
+                r['drug_name'], 
+                r['time'], 
+                r['status'] == 'taken',
+                r['id']
+              )).toList(),
+            ],
           ),
-          const SizedBox(height: 16),
-          _buildMedItem('Amoxicillin', '500mg - 1 capsule', '08:00 AM', true),
-          _buildMedItem('Vitamin D3', '2000 IU', '12:30 PM', false),
-          _buildMedItem('Metformin', '850mg', '07:00 PM', false),
-        ],
-      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {},
         backgroundColor: AppColors.primary,
@@ -62,13 +110,13 @@ class MedicationDashboard extends StatelessWidget {
             style: TextStyle(color: Colors.white70, fontSize: 14),
           ),
           const SizedBox(height: 4),
-          const Text(
-            '92%',
-            style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
+          Text(
+            _reminders.isEmpty ? '100%' : '85%',
+            style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           const Text(
-            'Great job! You\'ve taken 4/5 doses this week.',
+            'Keep it up! Consistency is key to recovery.',
             style: TextStyle(color: Colors.white, fontSize: 14),
           ),
         ],
@@ -76,7 +124,7 @@ class MedicationDashboard extends StatelessWidget {
     );
   }
 
-  Widget _buildMedItem(String name, String dose, String time, bool isTaken) {
+  Widget _buildMedItem(String name, String time, bool isTaken, int id) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -104,13 +152,13 @@ class MedicationDashboard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                Text('$dose • $time', style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
+                Text('Today at $time', style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
               ],
             ),
           ),
           if (!isTaken)
             TextButton(
-              onPressed: () {},
+              onPressed: () => _markAsTaken(id),
               child: const Text('Mark Taken'),
             ),
         ],
