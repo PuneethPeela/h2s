@@ -1,0 +1,20 @@
+[
+  {
+    "disease": "Common Cold",
+    "symptoms": ["Fever", "Cough", "Sore Throat", "Runny Nose"],
+    "advice": "Rest and hydration. Synthetic data used for demonstration.",
+    "severity": "Low"
+  },
+  {
+    "disease": "Influenza",
+    "symptoms": ["High Fever", "Muscle Ache", "Fatigue", "Dry Cough"],
+    "advice": "Consult a physician. Antivirals may be needed. Synthetic data used for demonstration.",
+    "severity": "Medium"
+  },
+  {
+    "disease": "Seasonal Allergy",
+    "symptoms": ["Sneezing", "Itchy Eyes", "Runny Nose"],
+    "advice": "Avoid allergens. Antihistamines may help. Synthetic data used for demonstration.",
+    "severity": "Low"
+  }
+]

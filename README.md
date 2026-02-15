@@ -1,15 +1,18 @@
 # AI-Based Patient Support Assistant
 
-A production-ready intelligent healthcare guidance platform built for the Kiro style hackathon.
+## 🎯 Problem Statement Alignment
+This solution is designed to improve **efficiency, understanding, and support** within the healthcare ecosystem by providing:
+- **Patient Education**: Simplification of complex medical terms and lab reports.
+- **Care Navigation**: Automated appointment scheduling and follow-up guidance.
+- **Decision Support**: AI-powered symptom analysis with risk scoring.
 
-## 🚀 Key Features
+> [!IMPORTANT]
+> **Data Compliance**: This system uses **synthetic data only** for all testing and demonstration purposes. No real patient data is stored.
 
-- **AI Chat Assistant**: Real-time medical guidance using OpenAI GPT.
-- **Symptom Checker**: TensorFlow-powered condition prediction and risk analysis.
-- **Lab Report Analysis**: OCR-based extraction and simplification of medical reports using AWS Textract.
-- **Medication Reminders**: Subscription-based tracking and adherence monitoring.
-- **Care Navigation**: Appointment scheduling and follow-up guidance.
-- **Secure Auth**: JWT-based authentication with encrypted patient history.
+## 🛡️ Ethical AI & Responsibility
+- **Prominent Disclaimers**: Every AI interaction includes a medical disclaimer.
+- **Transparency**: Limitations of AI-driven analysis are clearly stated in [ETHICAL_AI_COMPLIANCE.md](./ETHICAL_AI_COMPLIANCE.md).
+- **Workflow Support**: Focused on reducing the burden on healthcare professionals by empowering patients with accurate, verified information.
 
 ## 🛠 Tech Stack
 
