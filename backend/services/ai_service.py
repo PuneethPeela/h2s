@@ -27,46 +27,171 @@ class AIService:
                 self.textract = None
         except Exception:
             self.textract = None
+        
+        # Medical knowledge base for intelligent demo responses
+        self.medical_knowledge = self._load_medical_knowledge()
+
+    def _load_medical_knowledge(self):
+        """Comprehensive medical knowledge for intelligent demo responses"""
+        return {
+            'symptoms': {
+                'fever': {
+                    'advice': 'Monitor temperature, stay hydrated, rest. Seek immediate care if fever >103°F or lasts >3 days.',
+                    'red_flags': 'Severe headache, difficulty breathing, persistent vomiting'
+                },
+                'cough': {
+                    'advice': 'Stay hydrated, humidifier may help. Persistent cough >2 weeks needs evaluation.',
+                    'red_flags': 'Blood in mucus, chest pain, difficulty breathing'
+                },
+                'headache': {
+                    'advice': 'Rest in quiet dark room, hydrate. Consider OTC pain relievers.',
+                    'red_flags': 'Sudden severe headache, vision changes, confusion, neck stiffness'
+                },
+                'stomach pain': {
+                    'advice': 'Light diet (BRAT: bananas, rice, applesauce, toast), stay hydrated.',
+                    'red_flags': 'Severe pain, blood in stool, persistent vomiting, fever'
+                }
+            },
+            'medications': {
+                'general': 'Always consult healthcare provider before starting/stopping medications.',
+                'interactions': 'Inform doctor of ALL medications including supplements.',
+                'timing': 'Take medications as prescribed, same time each day for consistency.'
+            },
+            'preventive_care': {
+                'checkups': 'Annual physical recommended for adults.',
+                'screenings': 'Age-appropriate screenings (mammogram, colonoscopy, etc.).',
+                'vaccinations': 'Stay current with recommended vaccines.'
+            }
+        }
 
     def get_chat_response(self, prompt, context=""):
+        """Highly intelligent AI assistant with real medical knowledge"""
         # Use demo mode if OpenAI not configured
         if not self.has_openai:
-            return self._get_demo_response(prompt)
+            return self._get_intelligent_demo_response(prompt, context)
         
-        system_prompt = "You are a helpful AI Patient Assistant. Provide medical guidance but always include a disclaimer that you are not a doctor."
+        system_prompt = """You are an expert AI Medical Assistant with deep medical knowledge.
+        Provide accurate, helpful medical guidance while always including appropriate disclaimers.
+        Be empathetic, clear, and concise. Always recommend professional medical consultation for serious concerns."""
+        
         try:
             response = openai.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": f"Context: {context}\n\nUser: {prompt}"}
+                    {"role": "assistant", "content": context} if context else {"role": "system", "content": ""},
+                    {"role": "user", "content": prompt}
                 ],
-                max_tokens=200,
-                timeout=10  # 10 second timeout for faster responses
+                max_tokens=250,
+                temperature=0.7,
+                timeout=10
             )
             return response.choices[0].message.content
         except Exception as e:
-            return self._get_demo_response(prompt, error=str(e))
+            return self._get_intelligent_demo_response(prompt, context)
     
-    def _get_demo_response(self, message, error=None):
-        """Intelligent demo responses when OpenAI unavailable"""
+    def _get_intelligent_demo_response(self, message, context=""):
+        """Highly intelligent medical assistant - Demo mode with real medical knowledge"""
         msg_lower = message.lower()
         
-        if any(word in msg_lower for word in ['symptom', 'sick', 'fever', 'pain', 'hurt', 'cough']):
-            return ("🏥 **Health Concern Detected**\n\nI understand you're experiencing symptoms. While in demo mode, I can't provide AI-powered analysis, but I recommend:\n• Monitor your symptoms carefully\n• Stay hydrated and rest\n• Consult a healthcare professional if symptoms worsen\n\n⚠️ *Not medical advice. Configure OPENAI_API_KEY for full AI assistance.*")
+        # Symptom Analysis
+        if any(word in msg_lower for word in ['fever', 'temperature', 'hot', 'chills']):
+            return self._format_medical_response(
+                "Fever Assessment",
+                self.medical_knowledge['symptoms']['fever']['advice'],
+                "🚨 Seek immediate care if: " + self.medical_knowledge['symptoms']['fever']['red_flags'],
+                "Monitor temperature every 4 hours, stay hydrated with water/electrolyte drinks"
+            )
         
-        elif any(word in msg_lower for word in ['medication', 'medicine', 'drug', 'pill', 'prescription']):
-            return ("💊 **Medication Query**\n\nIn production mode, I would provide detailed medication information. For now:\n• Check your prescriptions in the Medication Dashboard\n• Consult your pharmacist for drug interactions\n• Never adjust dosage without medical advice\n\n⚠️ *Demo mode - Configure API key for full functionality.*")
+        elif any(word in msg_lower for word in ['cough', 'throat', 'congestion', 'cold']):
+            return self._format_medical_response(
+                "Respiratory Symptoms",
+                self.medical_knowledge['symptoms']['cough']['advice'],
+                "🚨 Warning signs: " + self.medical_knowledge['symptoms']['cough']['red_flags'],
+                "Honey tea, steam inhalation, and adequate rest can help"
+            )
         
-        elif any(word in msg_lower for word in ['appointment', 'doctor', 'visit', 'schedule']):
-            return ("📅 **Care Navigation**\n\nUse the Appointments section to manage your healthcare visits. With full AI enabled, I would provide intelligent scheduling recommendations and specialist referrals.\n\n⚠️ *Demo response - Full AI available with API configuration.*")
+        elif any(word in msg_lower for word in ['headache', 'migraine', 'head pain']):
+            return self._format_medical_response(
+                "Headache Management",
+                self.medical_knowledge['symptoms']['headache']['advice'],
+                "🚨 Emergency if: " + self.medical_knowledge['symptoms']['headache']['red_flags'],
+                "Track triggers (stress, food, sleep) in a headache diary"
+            )
         
+        elif any(word in msg_lower for word in ['stomach', 'nausea', 'vomiting', 'diarrhea', 'abdominal']):
+            return self._format_medical_response(
+                "Gastrointestinal Concerns",
+                self.medical_knowledge['symptoms']['stomach pain']['advice'],
+                "🚨 Seek care if" + self.medical_knowledge['symptoms']['stomach pain']['red_flags'],
+                "Avoid solid foods initially, gradually reintroduce bland foods"
+            )
+        
+        # Medication Queries
+        elif any(word in msg_lower for word in ['medication', 'medicine', 'drug', 'pill', 'prescription', 'dose']):
+            return self._format_medical_response(
+                "Medication Information",
+                self.medical_knowledge['medications']['general'],
+                "Important: " + self.medical_knowledge['medications']['interactions'],
+                "Best Practice: " + self.medical_knowledge['medications']['timing'],
+                show_demo_note=True
+            )
+        
+        # Appointment/Care Navigation
+        elif any(word in msg_lower for word in ['appointment', 'doctor', 'visit', 'schedule', 'specialist']):
+            return ("📅 **Care Navigation Assistance**\n\n"
+                   f"Based on your query: \"{message[:60]}...\"\n\n"
+                   "**Recommendations:**\n"
+                   "• Use the Appointments section to schedule visits\n"
+                   "• Primary care for general health concerns\n"
+                   "• Specialists for specific conditions (referral usually needed)\n"
+                   "• Urgent care for non-emergency immediate needs\n"
+                   "• Emergency room for life-threatening situations\n\n"
+                   "⚕️ *With full AI enabled, I would provide intelligent specialist recommendations and optimal scheduling.*\n\n"
+                   "⚠️ Demo Mode Active")
+        
+        # General Health Query
         else:
-            return (f"💬 **Message Received**: \"{message[:80]}{'...' if len(message) > 80 else ''}\"\n\nI'm operating in **demo mode** due to missing OpenAI API configuration. In production, I would provide context-aware medical assistance.\n\n**Try asking about**: symptoms, medications, or appointments!\n\n⚠️ *Configure OPENAI_API_KEY in .env for full AI capabilities.*")
+            return (f"💬 **Medical Assistant Response**\n\n"
+                   f"Query: \"{message[:100]}{'...' if len(message) > 100 else ''}\"\n\n"
+                   "I understand your health concern. In demo mode, I'm providing general guidance.\n\n"
+                   "**General Health Tips:**\n"
+                   "• Stay hydrated (8 glasses water daily)\n"
+                   "• Get adequate sleep (7-9 hours)\n"
+                   "• Regular exercise (30 min most days)\n"
+                   "• Balanced diet with fruits & vegetables\n"
+                   "• Manage stress through relaxation techniques\n\n"
+                   "**When to Seek Care:**\n"
+                   "• Severe or worsening symptoms\n"
+                   "• Symptoms lasting >1-2 weeks\n"
+                   "• High fever, chest pain, difficulty breathing\n\n"
+                   "⚕️ *Configure OPENAI_API_KEY for fully intelligent, context-aware medical assistance*\n\n"
+                   "⚠️ Not a substitute for professional medical advice")
+    
+    def _format_medical_response(self, title, advice, warning, tip, show_demo_note=False):
+        """Professional medical response formatting"""
+        response = f"🏥 **{title}**\n\n"
+        response += f"**Guidance:** {advice}\n\n"
+        response += f"{warning}\n\n"
+        response += f"💡 **Helpful Tip:** {tip}\n\n"
+        
+        if show_demo_note:
+            response += "⚕️ *Full AI integration provides detailed drug information, interactions, and personalized recommendations*\n\n"
+        
+        response += "⚠️ **Medical Disclaimer:** This is general information, not medical advice. Consult healthcare professionals for personalized guidance. Demo mode active - configure OPENAI_API_KEY for advanced AI assistance."
+        
+        return response
 
     def extract_lab_data(self, file_bytes):
+        """Extract text from lab reports using OCR"""
         if not self.textract:
-            return "🧪 **Demo Mode**: AWS Textract not configured. In production, this would extract text from lab reports using OCR. Please configure AWS credentials for full functionality."
+            return ("🧪 **Lab Report Processing - Demo Mode**\n\n"
+                   "AWS Textract OCR not configured. In production:\n"
+                   "• Extracts all text from lab PDFs/images\n"
+                   "• Identifies key values (glucose, cholesterol, etc.)\n"
+                   "• Highlights abnormal results\n"
+                   "• Provides AI-powered interpretation\n\n"
+                   "Configure AWS credentials for full functionality.")
         
         try:
             response = self.textract.analyze_document(
@@ -77,8 +202,8 @@ class AIService:
             for item in response['Blocks']:
                 if item['BlockType'] == 'LINE':
                     extracted_text += item['Text'] + "\n"
-            return extracted_text
+            return extracted_text if extracted_text else "No text could be extracted from the document."
         except Exception as e:
-            return f"Error extracting data: {str(e)}"
+            return f"Error processing lab report: {str(e)}"
 
 ai_service = AIService()
